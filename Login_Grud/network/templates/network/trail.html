@@ -1,0 +1,148 @@
+{% extends "network/layout.html" %}
+
+
+
+{% block body %}
+
+    <style>
+
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .form-group div {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group input[type="checkbox"] {
+            margin-right: 0.5rem;
+            transform: scale(1.2); /* Slightly larger checkboxes */
+            cursor: pointer; /* Change cursor to pointer */
+        }
+
+        .form-group label {
+            font-size: 1rem;
+            margin: 0;
+            line-height: 1.2;
+            cursor: pointer; /* Change cursor to pointer when hovering over label */
+        }
+    
+        /* Optional: Add some hover effect */
+        .form-group div:hover {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            padding: 0.5rem;
+        }
+    </style>
+    
+    <div class="container">
+        <h1>Trail Form {{users}}</h1>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'trail' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="client">Client:</label>
+                    <input type="text" id="client" name="client" maxlength="255" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" maxlength="20" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="number_student">Number of Students:</label>
+                    <input type="number" id="number_student" name="number_student" min="1" max="10"value="" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status" required>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="COMPLETED">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Handled By:</label>
+                    {% for program in obj_program %}
+                        <div>
+                            <input type="checkbox" id="program_{{ program.id }}" name="program" value="{{ program.id }}">
+                            <label for="program_{{ program.id }}">{{ program }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    <label for="assign_by">Assigned By:</label>
+                    <select id="assign_by" name="assign_by" required>                    
+                        <option value="{{request.user}}">{{request.user}}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Handled By:</label>
+                    {% for user in users %}
+                        <div>
+                            <input type="checkbox" id="user_{{ user.id }}" name="handle_by" value="{{ user.id }}">
+                            <label for="user_{{ user.id }}">{{ user }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+
+                
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        {% endif %}
+        </div>
+        
+{% endblock %}
