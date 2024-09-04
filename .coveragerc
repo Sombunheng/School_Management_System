@@ -1,0 +1,9 @@
+[run]
+# Specify the source code directories to measure coverage for
+source=authentication/,todos/, 
+    
+# Omit certain files from coverage measurement
+omit =
+    */migrations/*
+    */tests/* 
+    */settings.py
