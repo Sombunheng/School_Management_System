@@ -24,7 +24,7 @@ class UserRole(models.Model):
         return self.name
 
 class MyUserManager(UserManager):
-    def _create_user(self, username, email ,password , roles=None , **extra_fields):
+    def _create_user(self, username, email, password, roles=None, **extra_fields):
         """
         Create and save a user with the given username, email, and password.
         """
@@ -33,19 +33,24 @@ class MyUserManager(UserManager):
         
         if not email:
             raise ValueError("The given email must be set")
+        
         email = self.normalize_email(email)
-        # Lookup the real model class from the global app registry so this
-        # manager method can be used in migrations. This is fine because
-        # managers are by definition working on the real model.
         GlobalUserModel = apps.get_model(
             self.model._meta.app_label, self.model._meta.object_name
         )
         username = GlobalUserModel.normalize_username(username)
-        user = self.model(username=username, email=email ,**extra_fields)
-        user.password = make_password(password)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
         user.save(using=self._db)
+        
         if roles:
-            user.roles.set(roles)  # Use the set method to assign roles
+            if isinstance(roles, int):
+                role_instance = UserRole.objects.get(pk=roles)
+            else:
+                role_instance = roles
+            user.roles = role_instance
+            user.save()
+        
         return user
 
     def create_user(self, username, email, password=None, **extra_fields):
@@ -64,24 +69,16 @@ class MyUserManager(UserManager):
 
         return self._create_user(username, email, password, **extra_fields)
 
-class User(AbstractBaseUser, PermissionsMixin ,TrackingModel):
-   
-    username_validator = UnicodeUsernameValidator()
-
+class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
     username = models.CharField(
         _("username"),
         max_length=150,
         unique=True,
-        help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
-        ),
-        validators=[username_validator],
-        error_messages={
-            "unique": _("A user with that username already exists."),
-        },
+        help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
+        error_messages={"unique": _("A user with that username already exists.")},
     )
 
-    email = models.EmailField(_("email address"), blank=False , unique=True)
+    email = models.EmailField(_("email address"), blank=False, unique=True)
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
@@ -90,23 +87,17 @@ class User(AbstractBaseUser, PermissionsMixin ,TrackingModel):
     is_active = models.BooleanField(
         _("active"),
         default=True,
-        help_text=_(
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
-        ),
+        help_text=_("Designates whether this user should be treated as active."),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
-    roles = models.ForeignKey('UserRole', on_delete=models.CASCADE, null=True ,related_name="users")
+    roles = models.ForeignKey(UserRole, on_delete=models.CASCADE, null=True, related_name="users")
 
-    email_verified=models.BooleanField(
+    email_verified = models.BooleanField(
         _("email_verified"),
         default=False,
-        help_text=_(
-            "Designates whether this user email is verified "
-            
-        ),
+        help_text=_("Designates whether this user's email is verified."),
     )
-    
+
     objects = MyUserManager()
 
     EMAIL_FIELD = "email"
@@ -116,10 +107,10 @@ class User(AbstractBaseUser, PermissionsMixin ,TrackingModel):
     @property
     def token(self):
         token = jwt.encode(
-            {'username': self.username , 'email': self.email , 'exp': datetime.utcnow() + timedelta(hours=24)}
-             , settings.SECRET_KEY , algorithm='HS256' 
+            {'username': self.username, 'email': self.email, 'exp': datetime.utcnow() + timedelta(hours=24)},
+            settings.SECRET_KEY,
+            algorithm='HS256'
         )
-        
         return token
 
 class Teacher(models.Model):

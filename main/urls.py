@@ -44,7 +44,7 @@ urlpatterns = [
     path("api/auth/" , include("authentication.urls")),
     path("api/todos/" , include("todos.urls")),
     path("api/academics/" , include("academics.urls")),
-    path("api/todos/" , include("school.urls")),
+    path("api/" , include("school.urls")),
     path("api/todos/" , include("staff.urls")),
     path("api/todos/" , include("timetable.urls")),
 ]

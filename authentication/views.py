@@ -1,11 +1,24 @@
 from django.shortcuts import render
-from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer , TeacherSerializer
+from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer , TeacherSerializer , UserRoleSerializer
 from rest_framework import response , status , permissions
 from django.contrib.auth import authenticate
-from authentication.models import User , Teacher
+from authentication.models import User , Teacher , UserRole
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 
 # Create your views here.
+
+class RoleAPIView(ListCreateAPIView):
+    authentication_classes = []  
+    # permission_classes = (permissions.IsAuthenticated,)
+    
+    serializer_class = UserRoleSerializer
+
+    def perform_create(self , serializer):
+        return serializer.save()
+    
+    def get_queryset(self):
+        return UserRole.objects.all()
+
 
 class AuthUserAPIView(ListCreateAPIView):
     authentication_classes = []  

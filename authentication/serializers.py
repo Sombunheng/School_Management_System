@@ -10,11 +10,16 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('username' , 'email' , 'roles' , 'password')
+        fields = ('username' , 'email'  , 'password')
         
-    def create(self , validated_data):
-        return User.objects.create_user(**validated_data)
-      
+    def create(self, validated_data):
+        # Automatically assign a fixed role during creation
+        user = User.objects.create_user(**validated_data)
+        fixed_role_id = 4  # Set a default role (e.g., ID of 'Teacher' role)
+        user.roles_id = fixed_role_id
+        user.save()
+        return user
+
 class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=128 , min_length=6 , write_only=True
@@ -53,7 +58,7 @@ class UserSerializer(serializers.ModelSerializer):
     #     return instance     
     
 class TeacherSerializer(serializers.ModelSerializer):
-    user = UserSerializer()  # Nested UserSerializer
+    user = RegisterSerializer()  # Nested UserSerializer
 
     class Meta:
         model = Teacher
@@ -62,7 +67,11 @@ class TeacherSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
-        user = UserSerializer.create(UserSerializer(), validated_data=user_data)
+        user = User.objects.create_user(**user_data)
+        fixed_role_id = 3
+        user.role_id = fixed_role_id
+        user.save()
+
         teacher = Teacher.objects.create(user=user, **validated_data)
         return teacher
 
@@ -76,6 +85,9 @@ class TeacherSerializer(serializers.ModelSerializer):
 
         instance.save()
 
-        UserSerializer.update(UserSerializer(), instance=user, validated_data=user_data)
+        fixed_role_id = 3
+        user.roles_id = fixed_role_id
+        user.save()
+
         return instance
 

@@ -29,7 +29,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
     course_name = serializers.SerializerMethodField()
     teacher_name = serializers.SerializerMethodField()
 
-    print('teacher :' , teacher)
+    # print('teacher :' , teacher)
 
     class Meta:
         model = Classroom
@@ -53,7 +53,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all() , many=True, write_only=True)
     student_name = serializers.SerializerMethodField()
     course_names = serializers.SerializerMethodField()
-    print(' course not convert\n' , courses , '\n')
+    # print(' course not convert\n' , courses , '\n')
     class Meta:
         model = Enrollment
         fields = ['id', 'student', 'student_name', 'courses', 'enrollment_date' ,'course_names']
