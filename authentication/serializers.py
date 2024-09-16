@@ -15,7 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Automatically assign a fixed role during creation
         user = User.objects.create_user(**validated_data)
-        fixed_role_id = 4  # Set a default role (e.g., ID of 'Teacher' role)
+        fixed_role_id = 1  # Set a default role (e.g., ID of 'Teacher' role)
         user.roles_id = fixed_role_id
         user.save()
         return user
@@ -68,8 +68,9 @@ class TeacherSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user_data = validated_data.pop('user')
         user = User.objects.create_user(**user_data)
-        fixed_role_id = 3
-        user.role_id = fixed_role_id
+        roles = UserRole.objects.get(id=3)
+        fixed_role_id = roles
+        user.roles = fixed_role_id
         user.save()
 
         teacher = Teacher.objects.create(user=user, **validated_data)
@@ -84,9 +85,10 @@ class TeacherSerializer(serializers.ModelSerializer):
         instance.hire_date = validated_data.get('hire_date', instance.hire_date)
 
         instance.save()
+        roles = UserRole.objects.get(id=3)
 
-        fixed_role_id = 3
-        user.roles_id = fixed_role_id
+        fixed_role_id = roles
+        user.roles = fixed_role_id
         user.save()
 
         return instance

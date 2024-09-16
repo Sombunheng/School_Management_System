@@ -69,7 +69,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         enrollment = Enrollment.objects.create(**validated_data)
         enrollment.courses.set(courses)  # Set the many-to-many field
         return enrollment
-      
+    
 class AttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     class_instance = ClassroomSerializer(read_only=True)
@@ -80,8 +80,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
         fields = ['id', 'student', 'class_instance', 'date', 'status', 'status_display', 'notes']
 
 class ExamSerializer(serializers.ModelSerializer):
-    course = CourseSerializer(read_only=True)
-    class_instance = ClassroomSerializer(read_only=True)
 
     class Meta:
         model = Exam
@@ -89,7 +87,7 @@ class ExamSerializer(serializers.ModelSerializer):
 
 class ExamResultSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    exam = ExamSerializer(read_only=True)
+    # exam = ExamSerializer(read_only=True)
 
     class Meta:
         model = ExamResult
@@ -149,7 +147,6 @@ class TrailSerializer(serializers.ModelSerializer):
             'assign_by',
             'handle_by'
         ]
-
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:

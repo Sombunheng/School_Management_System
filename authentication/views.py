@@ -4,7 +4,7 @@ from rest_framework import response , status , permissions
 from django.contrib.auth import authenticate
 from authentication.models import User , Teacher , UserRole
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
-
+from .pagination import CustomPageNumberPagination
 # Create your views here.
 
 class RoleAPIView(ListCreateAPIView):
@@ -25,6 +25,7 @@ class AuthUserAPIView(ListCreateAPIView):
     # permission_classes = (permissions.IsAuthenticated,)
     
     serializer_class = UserSerializer
+    pagination_class = CustomPageNumberPagination
 
     def perform_create(self , serializer):
         return serializer.save()

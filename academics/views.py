@@ -125,17 +125,53 @@ class EnrollmentDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Enrollment.objects.all()
     
 class AttendanceViewSet(viewsets.ModelViewSet):
-    queryset = Attendance.objects.all()
-    serializer_class = AttendanceSerializer
-    # permission_classes = []
     authentication_classes = []  
 
-
-    def get_queryset(self):
-        # Optionally, filter the attendance records for the authenticated user
-        user = self.request.user
-        return self.queryset.filter(student=user) if user.is_student else self.queryset
+    queryset = Attendance.objects.all()
+    serializer_class = AttendanceSerializer
+    # permission_classes = [IsAuthenticated]  # Only allow authenticated users
 
     def perform_create(self, serializer):
+        # Customize any creation logic here if needed
         serializer.save()
-    
+
+    def get_queryset(self):
+        # Customize the queryset to filter attendance records if needed
+        queryset = super().get_queryset()
+        # Example: Filter by current user
+        # queryset = queryset.filter(student=self.request.user)
+        return queryset
+
+class ExamViewSet(viewsets.ModelViewSet):
+    authentication_classes = []  
+
+    queryset = Exam.objects.all()
+    serializer_class = ExamSerializer
+
+    def perform_create(self, serializer):
+        # Customize any creation logic here if needed
+        serializer.save()
+
+    def get_queryset(self):
+        # Customize the queryset to filter attendance records if needed
+        queryset = super().get_queryset()
+        # Example: Filter by current user
+        # queryset = queryset.filter(student=self.request.user)
+        return queryset
+
+class ExamResultViewSet(viewsets.ModelViewSet):
+    authentication_classes = []  
+
+    queryset = ExamResult.objects.all()
+    serializer_class = ExamResultSerializer
+
+    def perform_create(self, serializer):
+        # Customize any creation logic here if needed
+        serializer.save()
+
+    def get_queryset(self):
+        # Customize the queryset to filter attendance records if needed
+        queryset = super().get_queryset()
+        # Example: Filter by current user
+        # queryset = queryset.filter(student=self.request.user)
+        return queryset
