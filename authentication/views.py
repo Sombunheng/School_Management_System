@@ -5,20 +5,24 @@ from django.contrib.auth import authenticate
 from authentication.models import User , Teacher , UserRole
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 from .pagination import CustomPageNumberPagination
+from .permission import AdminOrReanOnly , IsSuperUser
+from rest_framework import viewsets
 # Create your views here.
 
-class RoleAPIView(ListCreateAPIView):
-    authentication_classes = []  
-    # permission_classes = (permissions.IsAuthenticated,)
-    
-    serializer_class = UserRoleSerializer
+class RoleViewSet(viewsets.ModelViewSet):
 
+    # authentication_classes = []  
+    permission_classes = [IsSuperUser]
+    queryset = UserRole.objects.all()
+    print(queryset)
+    serializer_class = UserRoleSerializer
     def perform_create(self , serializer):
         return serializer.save()
     
-    def get_queryset(self):
-        return UserRole.objects.all()
+    def get_queryset(self ):
+        queryset = super().get_queryset()
 
+        return queryset
 
 class AuthUserAPIView(ListCreateAPIView):
     authentication_classes = []  
@@ -34,7 +38,8 @@ class AuthUserAPIView(ListCreateAPIView):
         return User.objects.all()
 
 class RegisterAPIView(GenericAPIView):
-    
+    permission_classes = [IsSuperUser]
+
     authentication_classes = []  
 
     serializer_class = RegisterSerializer
@@ -65,8 +70,10 @@ class LoginAPIView(GenericAPIView):
         return response.Response({'message': "Invalid credentials, try again."}, status=status.HTTP_401_UNAUTHORIZED)
     
 class TeacherAPIView(ListCreateAPIView):
-    authentication_classes = []  
-    # permission_classes = (permissions.IsAuthenticated,)
+    # authentication_classes = [] 
+    # permission_classes = [IsSuperUser]
+
+    permission_classes = [AdminOrReanOnly]
     
     serializer_class = TeacherSerializer
 
@@ -78,8 +85,8 @@ class TeacherAPIView(ListCreateAPIView):
 
 class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = TeacherSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = []  
+    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):

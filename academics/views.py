@@ -7,6 +7,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from authentication.permission import AdminOrReanOnly
+
 
 
 class StudentAPIView(ListCreateAPIView):
@@ -143,16 +145,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ExamViewSet(viewsets.ModelViewSet):
-    authentication_classes = []  
-
+    # authentication_classes = []  
+    permission_classes = [AdminOrReanOnly]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
 
-    def perform_create(self, serializer):
-        # Customize any creation logic here if needed
+    def perform_create(self, serializer ):
+         # Customize any creation logic here if needed
         serializer.save()
 
     def get_queryset(self):
+        authentication_classes = []  
         # Customize the queryset to filter attendance records if needed
         queryset = super().get_queryset()
         # Example: Filter by current user
