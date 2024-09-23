@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from authentication.models import User ,UserRole ,Teacher 
+from authentication.models import User ,UserRole ,Teacher , Profile
 from school.models import School
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -92,4 +92,10 @@ class TeacherSerializer(serializers.ModelSerializer):
         user.save()
 
         return instance
+    
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['user' , 'profile_image' ]
 

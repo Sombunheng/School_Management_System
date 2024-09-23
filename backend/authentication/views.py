@@ -1,12 +1,18 @@
 from django.shortcuts import render
-from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer , TeacherSerializer , UserRoleSerializer
+from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer , TeacherSerializer , UserRoleSerializer , ProfileSerializer
 from rest_framework import response , status , permissions
 from django.contrib.auth import authenticate
-from authentication.models import User , Teacher , UserRole
+from authentication.models import User , Teacher , UserRole , Profile
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 from .pagination import CustomPageNumberPagination
 from .permission import AdminOrReanOnly , IsSuperUser
-from rest_framework import viewsets
+from rest_framework import viewsets , generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+
 # Create your views here.
 
 class RoleViewSet(viewsets.ModelViewSet):
@@ -91,3 +97,13 @@ class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         return Teacher.objects.all()
+
+class ProfileView(generics.CreateAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)

@@ -19,7 +19,16 @@ class AdminOrReanOnly(permissions.IsAdminUser):
          return hasattr(request.user, 'roles') and request.user.roles.id == 1
       
       return False
-   
+
+class TeacherOrReadOnly(BasePermission):
+   def has_object_permission(self, request, view):
+      if request.method in permissions.SAFE_METHODS:
+         return True
+      
+      if request.user.roles.id == 1:
+         return True
+      return False
+
 class IsSuperUser(BasePermission):
 
     def has_permission(self, request, view):

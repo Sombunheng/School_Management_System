@@ -77,7 +77,6 @@ class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
         help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
         error_messages={"unique": _("A user with that username already exists.")},
     )
-
     email = models.EmailField(_("email address"), blank=False, unique=True)
     is_staff = models.BooleanField(
         _("staff status"),
@@ -118,3 +117,10 @@ class Teacher(models.Model):
     school = models.ForeignKey('school.School', on_delete=models.SET_NULL, null=True, blank=True)
     specialization = models.CharField(max_length=255)
     hire_date = models.DateTimeField()
+
+class Profile(models.Model):
+    user = models.OneToOneField(User , on_delete=models.CASCADE)
+    profile_image = models.ImageField(upload_to='profile_image/' , blank=True , null=True)
+    
+    def __str__(self) :
+        return self.user.username

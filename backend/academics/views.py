@@ -7,12 +7,13 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from authentication.permission import AdminOrReanOnly
+from authentication.permission import AdminOrReanOnly , TeacherOrReadOnly
 
 
 
 class StudentAPIView(ListCreateAPIView):
-    authentication_classes = []  
+    # authentication_classes = []  
+    permission_classes = [AdminOrReanOnly]
     serializer_class = StudentSerializer
     
     def perform_create(self , serializer):
@@ -23,16 +24,19 @@ class StudentAPIView(ListCreateAPIView):
     
 class StudentDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = StudentSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = []  
+
+    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Student.objects.all()
 
 class TrailAPIView(ListCreateAPIView):
-    authentication_classes = []  
+    # authentication_classes = []  
     serializer_class = TrailSerializer
+    permission_classes = [AdminOrReanOnly]
+
     
     def perform_create(self , serializer):
         return serializer.save()
@@ -42,16 +46,16 @@ class TrailAPIView(ListCreateAPIView):
  
 class TrailDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = TrailSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Trail.objects.all()
 
 class ProgramAPIView(ListCreateAPIView):
-    authentication_classes = []  
     serializer_class = ProgramSerializer
+    permission_classes = [AdminOrReanOnly]
+
     
     def perform_create(self , serializer):
         return serializer.save()
@@ -61,17 +65,16 @@ class ProgramAPIView(ListCreateAPIView):
  
 class ProgramDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = ProgramSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Program.objects.all()
     
 class CourseAPIView(ListCreateAPIView):
-    authentication_classes = []  
     serializer_class = CourseSerializer
-    
+    permission_classes = [AdminOrReanOnly]
+
     def perform_create(self , serializer):
         return serializer.save()
     
@@ -80,17 +83,16 @@ class CourseAPIView(ListCreateAPIView):
  
 class CourseDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CourseSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Course.objects.all()
 
 class ClassroomAPIView(ListCreateAPIView):
-    authentication_classes = []  
     serializer_class = ClassroomSerializer
-    
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+
     def perform_create(self , serializer):
         # course = get_object_or_404(Course, id=self.request.data.get('course_id'))
         return serializer.save()
@@ -100,17 +102,16 @@ class ClassroomAPIView(ListCreateAPIView):
  
 class ClassroomDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CourseSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Classroom.objects.all()
     
 class EnrollmentAPIView(ListCreateAPIView):
-    authentication_classes = []  
     serializer_class = EnrollmentSerializer
-    
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+
     def perform_create(self , serializer):
         return serializer.save()
     
@@ -119,19 +120,17 @@ class EnrollmentAPIView(ListCreateAPIView):
     
 class EnrollmentDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = EnrollmentSerializer
-    authentication_classes = []  
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Enrollment.objects.all()
     
 class AttendanceViewSet(viewsets.ModelViewSet):
-    authentication_classes = []  
 
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
-    # permission_classes = [IsAuthenticated]  # Only allow authenticated users
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
     def perform_create(self, serializer):
         # Customize any creation logic here if needed
@@ -145,8 +144,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ExamViewSet(viewsets.ModelViewSet):
-    # authentication_classes = []  
-    permission_classes = [AdminOrReanOnly]
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
 
@@ -163,10 +161,10 @@ class ExamViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ExamResultViewSet(viewsets.ModelViewSet):
-    authentication_classes = []  
 
     queryset = ExamResult.objects.all()
     serializer_class = ExamResultSerializer
+    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
     def perform_create(self, serializer):
         # Customize any creation logic here if needed
