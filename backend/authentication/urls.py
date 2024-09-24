@@ -1,14 +1,9 @@
 from authentication import views
 from django.urls import path , include
 from rest_framework.routers import DefaultRouter
-from .views import RoleViewSet , ProfileViewSet
 from django.conf.urls.static import static
 from django.conf import settings
 
-
-router = DefaultRouter()
-router.register(r'roles', RoleViewSet),
-router.register(r'profile', ProfileViewSet),
 
 
 urlpatterns = [
@@ -17,6 +12,9 @@ urlpatterns = [
     path('user' , views.AuthUserAPIView.as_view() , name="user"),
     path('teacher' , views.TeacherAPIView.as_view() , name="Teacher"),
     path('teacher/<int:id>/' , views.TeacherDetailAPIView.as_view() , name="Teacher"),
-    path('', include(router.urls)),
-    path('<int:id>', include(router.urls)),
+    path('roles' , views.RoleAPIView.as_view() , name="roles"),
+    path('roles/<int:id>/' , views.RoleDetailAPIView.as_view() , name="roles"),
+    path('profiles' , views.ProfileAPIView.as_view() , name="profiles"),
+    path('profiles/<int:id>/' , views.ProfileDetailAPIView.as_view() , name="profiles"),
+   
 ] 

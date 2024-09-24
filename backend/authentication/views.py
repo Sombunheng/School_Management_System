@@ -15,20 +15,28 @@ from rest_framework.decorators import api_view
 
 # Create your views here.
 
-class RoleViewSet(viewsets.ModelViewSet):
+class RoleAPIView(ListCreateAPIView):
+    # authentication_classes = [] 
+    # permission_classes = [IsSuperUser]
 
-    # authentication_classes = []  
-    permission_classes = [IsSuperUser]
-    queryset = UserRole.objects.all()
-    print(queryset)
+    permission_classes = [AdminOrReanOnly]
+    
     serializer_class = UserRoleSerializer
+
     def perform_create(self , serializer):
         return serializer.save()
     
-    def get_queryset(self ):
-        queryset = super().get_queryset()
+    def get_queryset(self):
+        return UserRole.objects.all()
 
-        return queryset
+class RoleDetailAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = UserRoleSerializer
+    # authentication_classes = []  
+    permission_classes = [AdminOrReanOnly]
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        return Teacher.objects.all()
 
 class AuthUserAPIView(ListCreateAPIView):
     authentication_classes = []  
@@ -99,17 +107,25 @@ class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Teacher.objects.all()
 
 
-class ProfileViewSet(viewsets.ModelViewSet):
-
-    # authentication_classes = []  
+class ProfileAPIView(ListCreateAPIView):
+    # authentication_classes = [] 
     # permission_classes = [IsSuperUser]
-    queryset = Profile.objects.all()
-    print(queryset)
+
+    permission_classes = [AdminOrReanOnly]
+    
     serializer_class = ProfileSerializer
+
     def perform_create(self , serializer):
         return serializer.save()
     
-    def get_queryset(self ):
-        queryset = super().get_queryset()
+    def get_queryset(self):
+        return Profile.objects.all()
 
-        return queryset
+class ProfileDetailAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProfileSerializer
+    # authentication_classes = []  
+    permission_classes = [AdminOrReanOnly]
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        return Profile.objects.all()
