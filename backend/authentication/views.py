@@ -98,12 +98,18 @@ class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Teacher.objects.all()
 
-class ProfileView(generics.CreateAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=201)
+class ProfileViewSet(viewsets.ModelViewSet):
+
+    # authentication_classes = []  
+    # permission_classes = [IsSuperUser]
+    queryset = Profile.objects.all()
+    print(queryset)
+    serializer_class = ProfileSerializer
+    def perform_create(self , serializer):
+        return serializer.save()
+    
+    def get_queryset(self ):
+        queryset = super().get_queryset()
+
+        return queryset

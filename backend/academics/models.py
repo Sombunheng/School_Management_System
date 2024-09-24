@@ -99,6 +99,8 @@ class Student(models.Model):
     admission_date = models.DateField(default=timezone.now)
     courses = models.ManyToManyField(Course, related_name='students')
     branch = models.ForeignKey('school.Branch', on_delete=models.CASCADE, related_name='students')
+    image = models.ImageField(upload_to='students/images/', blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

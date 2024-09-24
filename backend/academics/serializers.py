@@ -121,7 +121,8 @@ class StudentSerializer(serializers.ModelSerializer):
             'parent_contact',
             'student_passport',
             'admission_date',
-            'branch'
+            'branch',
+            'image'
         ]
     # def validate_admission_date(self, value):
     #     if isinstance(value, timezone.datetime):
