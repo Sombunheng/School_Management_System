@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from authentication.models import User ,UserRole ,Teacher , Profile
 from school.models import School
+from django.core.exceptions import ValidationError
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     
@@ -27,7 +29,7 @@ class LoginSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ('username' , 'email' , 'password' , 'token')
+        fields = ('id' , 'username' , 'email' , 'password' , 'token')
         
         read_only_fields = ['token']
         
@@ -93,9 +95,19 @@ class TeacherSerializer(serializers.ModelSerializer):
 
         return instance
     
-
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['user' , 'profile_image' ]
+        fields = ['id' ,'user' , 'profile_image' ]
 
+    def validate_profile_image(self, value):
+        # Check file size
+        max_size = 5 * 1024 * 1024  # 5 MB
+        if value.size > max_size:
+            raise ValidationError(f"Image size should be less than {max_size / (1024 * 1024)} MB")
+        
+        # Check file format
+        if not value.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            raise ValidationError("Only '.png', '.jpg', and '.jpeg' formats are allowed.")
+        
+        return value

@@ -4,14 +4,14 @@ from .models import School, Branch
 from .serializers import SchoolSerializer, BranchSerializer
 
 class SchoolViewSet(viewsets.ModelViewSet):
-    authentication_classes = []  
+    # authentication_classes = []  
     queryset = School.objects.all()
 
     serializer_class = SchoolSerializer
     # permission_classes = [IsAuthenticated]  # Apply authentication permissions
 
 class BranchViewSet(viewsets.ModelViewSet):
-    authentication_classes = []  
+    # authentication_classes = []  
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
     # permission_classes = [IsAuthenticated]  # Apply authentication permissions

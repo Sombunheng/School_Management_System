@@ -7,6 +7,8 @@ class Program(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     school = models.ForeignKey('school.School', on_delete=models.CASCADE, related_name='program' , default=1)
+    image = models.ImageField(upload_to='programs/images/', blank=True, null=True)  # Add this field to the Program model
+
     def __str__(self):
         return f'program name :{self.name} '
 
@@ -17,6 +19,7 @@ class Course(models.Model):
     credits = models.PositiveIntegerField()
     program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True)
     school = models.ForeignKey('school.School', on_delete=models.CASCADE, related_name='courses')
+    image = models.ImageField(upload_to='courses/images/', blank=True, null=True)  # Add this field to the Course model
 
     def __str__(self):
         return f'{self.name} ({self.code})'
@@ -133,6 +136,7 @@ class Trail(models.Model):
 
     def __str__(self):
         return f"{self.client} - {self.get_status_display()} - {self.programs} - {self.handle_by}"
+    image = models.ImageField(upload_to='trails/images/', blank=True, null=True)  # Optional image field
 
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')

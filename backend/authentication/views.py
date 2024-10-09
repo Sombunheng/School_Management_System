@@ -5,21 +5,21 @@ from django.contrib.auth import authenticate
 from authentication.models import User , Teacher , UserRole , Profile
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 from .pagination import CustomPageNumberPagination
-from .permission import AdminOrReanOnly , IsSuperUser
+from .permission import AdminOrReanOnly , IsSuperUser , IsOwnerOrReadOnly
 from rest_framework import viewsets , generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from rest_framework.permissions import AllowAny
+
 
 
 # Create your views here.
 
 class RoleAPIView(ListCreateAPIView):
-    # authentication_classes = [] 
-    # permission_classes = [IsSuperUser]
 
-    permission_classes = [AdminOrReanOnly]
+    permission_classes = [AdminOrReanOnly | IsSuperUser]
     
     serializer_class = UserRoleSerializer
 
@@ -31,16 +31,14 @@ class RoleAPIView(ListCreateAPIView):
 
 class RoleDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserRoleSerializer
-    # authentication_classes = []  
-    permission_classes = [AdminOrReanOnly]
+    permission_classes = [AdminOrReanOnly | IsSuperUser]
     lookup_field = "id"
     
     def get_queryset(self):
         return Teacher.objects.all()
 
 class AuthUserAPIView(ListCreateAPIView):
-    authentication_classes = []  
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [ IsSuperUser]
     
     serializer_class = UserSerializer
     pagination_class = CustomPageNumberPagination
@@ -51,10 +49,18 @@ class AuthUserAPIView(ListCreateAPIView):
     def get_queryset(self):
         return User.objects.all()
 
-class RegisterAPIView(GenericAPIView):
+class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = UserSerializer
     permission_classes = [IsSuperUser]
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        return User.objects.all()
 
-    authentication_classes = []  
+
+class RegisterAPIView(GenericAPIView):
+    permission_classes = [AdminOrReanOnly | IsSuperUser]
+
 
     serializer_class = RegisterSerializer
     
@@ -67,8 +73,8 @@ class RegisterAPIView(GenericAPIView):
         return response.Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
        
 class LoginAPIView(GenericAPIView):
-    
     authentication_classes = []  
+    permission_classes = [AllowAny]
     serializer_class = LoginSerializer
     
     def post(self, request):
@@ -84,10 +90,8 @@ class LoginAPIView(GenericAPIView):
         return response.Response({'message': "Invalid credentials, try again."}, status=status.HTTP_401_UNAUTHORIZED)
     
 class TeacherAPIView(ListCreateAPIView):
-    # authentication_classes = [] 
-    # permission_classes = [IsSuperUser]
 
-    permission_classes = [AdminOrReanOnly]
+    permission_classes = [AdminOrReanOnly | IsSuperUser]
     
     serializer_class = TeacherSerializer
 
@@ -98,33 +102,34 @@ class TeacherAPIView(ListCreateAPIView):
         return Teacher.objects.all()
 
 class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [AdminOrReanOnly | IsSuperUser]
     serializer_class = TeacherSerializer
-    # authentication_classes = []  
-    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):
         return Teacher.objects.all()
 
-
 class ProfileAPIView(ListCreateAPIView):
-    # authentication_classes = [] 
-    # permission_classes = [IsSuperUser]
-
-    permission_classes = [AdminOrReanOnly]
     
     serializer_class = ProfileSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
     def perform_create(self , serializer):
+        user = self.request.user
+        print("user in create" , user)
+        print("get data" , serializer.validated_data.get("user"))
+        if serializer.validated_data.get('user') != user:
+            print("this function work ?")
+            return Response({"detail": "You can only create your own profile."}, status=status.HTTP_403_FORBIDDEN)
         return serializer.save()
     
     def get_queryset(self):
         return Profile.objects.all()
 
 class ProfileDetailAPIView(RetrieveUpdateDestroyAPIView):
+    # permission_classes = [IsOwnerOrReadOnly]
     serializer_class = ProfileSerializer
     # authentication_classes = []  
-    permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
     
     def get_queryset(self):

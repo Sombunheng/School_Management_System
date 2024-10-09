@@ -34,7 +34,16 @@ class ClassroomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Classroom
         fields = ['id', 'name', 'courses', 'course_name', 'teacher', 'teacher_name', 'start_date', 'end_date']
-        
+    
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        # Check if start_date is before end_date
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError("Start date must be before end date.")
+        return data
+
     def get_course_name(self, obj):
         return [course.name for course in obj.courses.all()]
         # return [course.name for course in obj.courses.all()]
@@ -85,6 +94,17 @@ class ExamSerializer(serializers.ModelSerializer):
         model = Exam
         fields = ['id', 'course', 'class_instance', 'title', 'description', 'exam_date', 'start_time', 'end_time']
 
+    def validate(self, data):
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        exam_date = data.get('exam_date')
+        # Check if start_date is before end_date
+        if start_time and end_time and start_time > end_time:
+            raise serializers.ValidationError("Start date must be before end date.")
+        if exam_date < timezone.now().date():
+            raise serializers.ValidationError("Exam date cannot be in the past.")
+        return data
+    
 class ExamResultSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     # exam = ExamSerializer(read_only=True)
@@ -154,3 +174,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [ 'id', 'student', 'class_instance', 'date' , 'status', 'notes' ]
 
+    def validate(self, data):
+        date = data.get("data")
+        if date < timezone.now().data():
+            raise serializers.ValidationError("Attendence date cannot be in the past. ")
