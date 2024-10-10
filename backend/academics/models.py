@@ -6,7 +6,7 @@ from django.db import models
 class Program(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    school = models.ForeignKey('school.School', on_delete=models.CASCADE, related_name='program' , default=1)
+    branch = models.ForeignKey('school.Branch', on_delete=models.CASCADE, related_name='Branch' , default=1)
     image = models.ImageField(upload_to='programs/images/', blank=True, null=True)  # Add this field to the Program model
 
     def __str__(self):

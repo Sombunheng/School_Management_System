@@ -12,15 +12,49 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'code', 'description', 'credits', 'program', 'school']
         
 class ProgramSerializer(serializers.ModelSerializer):
-    courses = serializers.SerializerMethodField()
+    courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True, write_only=True)  # Accept primary keys for courses
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'school', 'courses']
+        fields = ['id', 'name', 'description', 'branch', 'courses']
 
     def get_courses(self, obj):
         # Assuming courses are associated with the same school as the program
         return CourseSerializer(Course.objects.filter(program=obj), many=True).data  
+
+    def create(self, validated_data):
+        # Extract course IDs
+        course_ids = validated_data.pop('courses', [])
+        
+        # Create the program instance
+        program = Program.objects.create(**validated_data)
+        
+        # Assign the existing courses by their IDs to this program
+        for course_id in course_ids:
+            course = Course.objects.get(id=course_id)
+            course.program = program
+            course.save()
+        
+        return program
+
+    def update(self, instance, validated_data):
+        # Extract course IDs
+        course_ids = validated_data.pop('courses', [])
+        
+        # Update the program instance
+        instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
+        instance.branch = validated_data.get('branch', instance.branch)
+        instance.save()
+
+        # Optionally: Clear existing courses linked to this program and assign new ones
+        instance.course_set.clear()  # Removes the relationship without deleting courses
+        for course_id in course_ids:
+            course = Course.objects.get(id=course_id)
+            course.program = instance
+            course.save()
+
+        return instance
 
 class ClassroomSerializer(serializers.ModelSerializer):
     
@@ -178,3 +212,4 @@ class AttendanceSerializer(serializers.ModelSerializer):
         date = data.get("data")
         if date < timezone.now().data():
             raise serializers.ValidationError("Attendence date cannot be in the past. ")
+        
