@@ -31,6 +31,14 @@ class StudentDetailAPIView(RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         return Student.objects.all()
+    
+    def destroy(self, request, *args, **kwargs):
+        # Get the course object to be deleted
+        instance = self.get_object()
+        instance.delete()  # Delete the instance
+
+        # Return a custom response with a success message
+        return Response({"message": "Student deleted successfully!"}, status=status.HTTP_200_OK)
 
 class TrailAPIView(ListCreateAPIView):
     # authentication_classes = []  
@@ -88,6 +96,14 @@ class CourseDetailAPIView(RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         return Course.objects.all()
+    
+    def destroy(self, request, *args, **kwargs):
+        # Get the course object to be deleted
+        instance = self.get_object()
+        instance.delete()  # Delete the instance
+
+        # Return a custom response with a success message
+        return Response({"message": "Course deleted successfully!"}, status=status.HTTP_200_OK)
 
 class ClassroomAPIView(ListCreateAPIView):
     serializer_class = ClassroomSerializer
@@ -120,7 +136,7 @@ class EnrollmentAPIView(ListCreateAPIView):
     
 class EnrollmentDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = EnrollmentSerializer
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+    permission_classes = [AdminOrReanOnly | TeacherOrReadOnly]
     lookup_field = "id"
     
     def get_queryset(self):

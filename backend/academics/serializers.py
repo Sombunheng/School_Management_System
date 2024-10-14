@@ -5,56 +5,37 @@ from school.models import School, Branch
 
 class CourseSerializer(serializers.ModelSerializer):
     program = serializers.PrimaryKeyRelatedField(queryset=Program.objects.all())
-    school = serializers.PrimaryKeyRelatedField(queryset=School.objects.all())
 
     class Meta:
         model = Course
-        fields = ['id', 'name', 'code', 'description', 'credits', 'program', 'school']
+        fields = ['id', 'name', 'code', 'description', 'credits', 'program', ]
         
+
 class ProgramSerializer(serializers.ModelSerializer):
     courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True, write_only=True)  # Accept primary keys for courses
+    course_list = serializers.SerializerMethodField()  # Display courses associated with the program
 
     class Meta:
         model = Program
-        fields = ['id', 'name', 'description', 'branch', 'courses']
+        fields = ['id', 'name', 'description', 'branch', 'courses', 'course_list']  # Added course_list to fields
 
-    def get_courses(self, obj):
-        # Assuming courses are associated with the same school as the program
-        return CourseSerializer(Course.objects.filter(program=obj), many=True).data  
+    def get_course_list(self, obj):
+        # This will return a list of course names associated with the program
+        return [course.name for course in obj.courses.all()]  # Assuming Course has a 'name' field
 
     def create(self, validated_data):
-        # Extract course IDs
-        course_ids = validated_data.pop('courses', [])
-        
-        # Create the program instance
+        courses = validated_data.pop('courses', [])
         program = Program.objects.create(**validated_data)
-        
-        # Assign the existing courses by their IDs to this program
-        for course_id in course_ids:
-            course = Course.objects.get(id=course_id)
-            course.program = program
-            course.save()
-        
+        program.courses.set(courses)  # Assign the courses to the program
         return program
 
     def update(self, instance, validated_data):
-        # Extract course IDs
-        course_ids = validated_data.pop('courses', [])
-        
-        # Update the program instance
-        instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
-        instance.branch = validated_data.get('branch', instance.branch)
-        instance.save()
-
-        # Optionally: Clear existing courses linked to this program and assign new ones
-        instance.course_set.clear()  # Removes the relationship without deleting courses
-        for course_id in course_ids:
-            course = Course.objects.get(id=course_id)
-            course.program = instance
-            course.save()
-
+        courses = validated_data.pop('courses', None)
+        instance = super().update(instance, validated_data)
+        if courses is not None:
+            instance.courses.set(courses)  # Update the courses if provided
         return instance
+
 
 class ClassroomSerializer(serializers.ModelSerializer):
     
@@ -108,10 +89,19 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         return [course.name for course in obj.courses.all()]
 
     def create(self, validated_data):
-        courses = validated_data.pop('courses')
-        enrollment = Enrollment.objects.create(**validated_data)
-        enrollment.courses.set(courses)  # Set the many-to-many field
-        return enrollment
+            student = validated_data['student']
+            courses = validated_data['courses']
+
+            # Check if enrollment already exists for the student and the courses
+            for course in courses:
+                if Enrollment.objects.filter(student=student, courses=course).exists():
+                    raise serializers.ValidationError(f'Student {student} is already enrolled in {course.name}.')
+
+            # If no duplicates, create the enrollment
+            enrollment = Enrollment.objects.create(student=student)
+            enrollment.courses.set(courses)  # Set the many-to-many relationship
+            return enrollment
+    
     
 class AttendanceSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())

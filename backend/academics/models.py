@@ -1,5 +1,7 @@
 from django.utils import timezone
 from django.db import models
+from django.db.models import UniqueConstraint
+
 
 # Create your models here.
 
@@ -17,8 +19,7 @@ class Course(models.Model):
     code = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True, null=True)
     credits = models.PositiveIntegerField()
-    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True)
-    school = models.ForeignKey('school.School', on_delete=models.CASCADE, related_name='courses')
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True, blank=True ,related_name='courses')
     image = models.ImageField(upload_to='courses/images/', blank=True, null=True)  # Add this field to the Course model
 
     def __str__(self):
@@ -143,6 +144,12 @@ class Enrollment(models.Model):
     courses = models.ManyToManyField(Course , related_name='courses_enrollment')
     enrollment_date = models.DateField(auto_now_add=True)
     
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['student', 'courses'], name='unique_student_course_enrollment')
+        ]
+
     def __str__(self):
         return f'{self.student.username} enrolled in {self.courses.name}'
+    
     

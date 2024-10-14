@@ -14,13 +14,13 @@ class SchoolSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         # Check if another school already has the same phone number
         if School.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This phone number is already in use by another school.")
+            raise serializers.ValidationError("This email number is already in use by another school.")
         return value
     
     def validate_webiste(self, value):
         # Check if another school already has the same phone number
         if School.objects.filter(website=value).exists():
-            raise serializers.ValidationError("This phone number is already in use by another school.")
+            raise serializers.ValidationError("This website number is already in use by another school.")
         return value
 
 class BranchSerializer(serializers.ModelSerializer):
