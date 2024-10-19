@@ -23,6 +23,10 @@ urlpatterns = [
     path('classroom/<int:id>/', ClassroomDetailAPIView.as_view(), name='student-create'),   
     path('enrollment/', EnrollmentAPIView.as_view(), name='student-create'),   
     path('enrollment/<int:id>/', EnrollmentDetailAPIView.as_view(), name='student-create'),   
+    path('classrooms/<int:classroom_id>/add-students/', AddStudentsToClassroomView.as_view(), name='add_students_to_classroom'),
+    path('classrooms/<int:classroom_id>/add-students/', AddStudentsToClassroomView.as_view(), name='add_students_to_classroom'),
+
+
     path('', include(router.urls)),
     path('<int:id>', include(router.urls)),
  

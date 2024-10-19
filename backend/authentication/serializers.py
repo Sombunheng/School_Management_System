@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from authentication.models import User ,UserRole ,Teacher , Profile
-from school.models import School
+from authentication.models import User ,UserRole  , Profile
+from school.models import Branch
 from django.core.exceptions import ValidationError
+from school.serializers import BranchSerializer
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -10,15 +11,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         max_length=128 , min_length=6 , write_only=True
     )
     
+    roles = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset=UserRole.objects.all(),  # Fetches the role by 'id'
+        required=False
+    )
+    branch = serializers.SlugRelatedField(
+        slug_field='id',  # Fetches the branch by 'id'
+        queryset=Branch.objects.all(),
+        required=False
+    )
+
     class Meta:
         model = User
-        fields = ('username' , 'email'  , 'password')
+        fields = ('username', 'email','roles', 'password', 'branch', 'specialization', 'hire_date')
         
     def create(self, validated_data):
         # Automatically assign a fixed role during creation
         user = User.objects.create_user(**validated_data)
-        fixed_role_id = 1  # Set a default role (e.g., ID of 'Teacher' role)
-        user.roles_id = fixed_role_id
         user.save()
         return user
 
@@ -39,62 +49,45 @@ class UserRoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 class UserSerializer(serializers.ModelSerializer):
-    roles = serializers.PrimaryKeyRelatedField(queryset=UserRole.objects.all())
-    # roles = UserRoleSerializer( read_only=True)
+    roles = serializers.SlugRelatedField(
+        slug_field='id',
+        queryset=UserRole.objects.all(),  # Assumes UserRole has a 'name' field
+        required=False
+    )
+    branch = serializers.SlugRelatedField(
+        slug_field='id',  # Assuming School has a 'name' field
+        queryset=Branch.objects.all(),
+        required=False
+    )
+
+    roles_name = serializers.SerializerMethodField()
+    
+    branch_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'is_staff', 'is_active', 'date_joined', 'email_verified', 'roles']
+        fields = [
+            'id', 'username', 'email', 'is_staff', 'is_active', 'date_joined','roles','roles_name','branch','branch_name',
+             'email_verified',  'specialization', 'hire_date', 'token'
+        ]
+        read_only_fields = ['id', 'date_joined', 'token']
+
+    def get_roles_name(self, obj):
+        return obj.roles.name if obj.roles else None    
     
-    # def create(self, validated_data):
-    #     roles = validated_data.pop('roles')
-    #     user = User.objects.create(**validated_data)
-    #     if roles: 
-    #         user.roles.set(roles)
-    #     return user
-
-    # def update(self, instance, validated_data):
-    #     roles = validated_data.pop('roles')
-    #     instance = super().update(instance, validated_data)
-    #     if roles is not None:
-    #         instance.roles.set(roles)
-    #     return instance     
-    
-class TeacherSerializer(serializers.ModelSerializer):
-    user = RegisterSerializer()  # Nested UserSerializer
-
-    class Meta:
-        model = Teacher
-        fields = ['id', 'user', 'school', 'specialization', 'hire_date']
-        read_only_fields = ['id']
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user = User.objects.create_user(**user_data)
-        roles = UserRole.objects.get(id=3)
-        fixed_role_id = roles
-        user.roles = fixed_role_id
-        user.save()
-
-        teacher = Teacher.objects.create(user=user, **validated_data)
-        return teacher
+    def get_branch_name(self, obj):
+    # Return the name of the branch associated with the user
+        return obj.branch.name if obj.branch else None
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user')
-        user = instance.user
-
-        instance.school = validated_data.get('school', instance.school)
-        instance.specialization = validated_data.get('specialization', instance.specialization)
-        instance.hire_date = validated_data.get('hire_date', instance.hire_date)
-
-        instance.save()
-        roles = UserRole.objects.get(id=3)
-
-        fixed_role_id = roles
-        user.roles = fixed_role_id
-        user.save()
-
+        # Custom update logic if needed
+        password = validated_data.pop('password', None)
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save()
         return instance
-    
+     
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile

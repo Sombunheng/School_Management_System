@@ -1,6 +1,8 @@
 from django.utils import timezone
 from django.db import models
 from django.db.models import UniqueConstraint
+from datetime import time, date
+
 
 
 # Create your models here.
@@ -29,25 +31,15 @@ class Classroom(models.Model):
     name = models.CharField(max_length=255)
     courses = models.ManyToManyField(Course , related_name='courses_classroom')
     teacher = models.ForeignKey('authentication.User', on_delete=models.SET_NULL, null=True, related_name='classes')
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_time = models.TimeField(default=time(9, 0))  
+    end_time = models.TimeField(default=time(17, 0))  
+    start_date = models.DateField(default=date.today) 
+    end_date = models.DateField(default=date(2024, 12, 31))  
 
     def __str__(self):
         return f'{self.name} - {self.courses.name}'
 
-class Attendance(models.Model):
-    student = models.ForeignKey('authentication.User', on_delete=models.CASCADE, related_name='attendances')
-    class_instance = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='attendances')
-    date = models.DateField()
-    status = models.CharField(max_length=20, choices=[('present', 'Present'), ('absent', 'Absent'), ('late', 'Late')], default='absent')
-    notes = models.TextField(blank=True, null=True)
 
-    class Meta:
-        unique_together = ('student', 'class_instance', 'date')
-        
-    def __str__(self):
-        return f'{self.student.username} - {self.class_instance.name} - {self.date}'
-    
 class Exam(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams')
     class_instance = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
@@ -60,14 +52,6 @@ class Exam(models.Model):
     def __str__(self):
         return f'{self.title} - {self.course.name} - {self.exam_date}'
     
-class ExamResult(models.Model):
-    student = models.ForeignKey('authentication.User', on_delete=models.CASCADE, related_name='exam_results')
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')
-    score = models.DecimalField(max_digits=5, decimal_places=2)
-    grade = models.CharField(max_length=10, blank=True, null=True)  # Optional field for grade representation
-
-    def __str__(self):
-        return f'{self.student.username} - {self.exam.title} - {self.score}'
 
 class Student(models.Model):
     
@@ -104,11 +88,35 @@ class Student(models.Model):
     courses = models.ManyToManyField(Course, related_name='students')
     branch = models.ForeignKey('school.Branch', on_delete=models.CASCADE, related_name='students')
     image = models.ImageField(upload_to='students/images/', blank=True, null=True)
+    classrooms = models.ManyToManyField('Classroom', related_name='students')
 
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
  
+class ExamResult(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_results')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+    grade = models.CharField(max_length=10, blank=True, null=True)  # Optional field for grade representation
+
+    def __str__(self):
+        return f'{self.student.username} - {self.exam.title} - {self.score}'
+
+
+class Attendance(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendances')
+    class_instance = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField()
+    status = models.CharField(max_length=20, choices=[('present', 'Present'), ('absent', 'Absent'), ('late', 'Late')], default='absent')
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('student', 'class_instance', 'date')
+        
+    def __str__(self):
+        return f'{self.student.username} - {self.class_instance.name} - {self.date}'
+
 class Trail(models.Model):
 
     PENDING = 'PENDING'
@@ -139,17 +147,14 @@ class Trail(models.Model):
         return f"{self.client} - {self.get_status_display()} - {self.programs} - {self.handle_by}"
     image = models.ImageField(upload_to='trails/images/', blank=True, null=True)  # Optional image field
 
+
 class Enrollment(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='enrollments')
     courses = models.ManyToManyField(Course , related_name='courses_enrollment')
     enrollment_date = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='active')
+
     
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=['student', 'courses'], name='unique_student_course_enrollment')
-        ]
 
     def __str__(self):
-        return f'{self.student.username} enrolled in {self.courses.name}'
-    
-    
+        return f'{self.student.last_name} enrolled in {self.courses.name}'

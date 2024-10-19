@@ -2,9 +2,12 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import School, Branch
 from .serializers import SchoolSerializer, BranchSerializer
+from ..authentication.permission import IsSuperUser , AdminOrReanOnly , TeacherOrReadOnly
 
 class SchoolViewSet(viewsets.ModelViewSet):
     # authentication_classes = []  
+    permission_classes = [ IsSuperUser  ]
+
     queryset = School.objects.all()
 
     serializer_class = SchoolSerializer
@@ -12,6 +15,8 @@ class SchoolViewSet(viewsets.ModelViewSet):
 
 class BranchViewSet(viewsets.ModelViewSet):
     # authentication_classes = []  
+    permission_classes = [ IsSuperUser]
+
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
     # permission_classes = [IsAuthenticated]  # Apply authentication permissions

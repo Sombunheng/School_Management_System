@@ -103,6 +103,10 @@ class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
     
+    branch = models.ForeignKey('school.Branch', on_delete=models.SET_NULL, null=True, blank=True , default=1)
+    specialization = models.CharField(max_length=255 , default="General")
+    hire_date = models.DateTimeField(default=timezone.now)
+
     @property
     def token(self):
         token = jwt.encode(
@@ -112,11 +116,6 @@ class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
         )
         return token
 
-class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
-    school = models.ForeignKey('school.School', on_delete=models.SET_NULL, null=True, blank=True)
-    specialization = models.CharField(max_length=255)
-    hire_date = models.DateTimeField()
 
 class Profile(models.Model):
     user = models.OneToOneField(User , on_delete=models.CASCADE)

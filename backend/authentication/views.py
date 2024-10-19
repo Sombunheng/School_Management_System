@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer , TeacherSerializer , UserRoleSerializer , ProfileSerializer
+from authentication.serializers import RegisterSerializer , LoginSerializer , UserSerializer  , UserRoleSerializer , ProfileSerializer
 from rest_framework import response , status , permissions
 from django.contrib.auth import authenticate
-from authentication.models import User , Teacher , UserRole , Profile
+from authentication.models import User  , UserRole , Profile
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 from .pagination import CustomPageNumberPagination
 from .permission import AdminOrReanOnly , IsSuperUser , IsOwnerOrReadOnly
@@ -19,7 +19,7 @@ from rest_framework.permissions import AllowAny
 
 class RoleAPIView(ListCreateAPIView):
 
-    permission_classes = [AdminOrReanOnly | IsSuperUser]
+    permission_classes = [  IsSuperUser]
     
     serializer_class = UserRoleSerializer
 
@@ -31,11 +31,11 @@ class RoleAPIView(ListCreateAPIView):
 
 class RoleDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserRoleSerializer
-    permission_classes = [AdminOrReanOnly | IsSuperUser]
+    permission_classes = [  IsSuperUser]
     lookup_field = "id"
     
     def get_queryset(self):
-        return Teacher.objects.all()
+        return UserRole.objects.all()
 
 class AuthUserAPIView(ListCreateAPIView):
     permission_classes = [ IsSuperUser]
@@ -82,32 +82,14 @@ class LoginAPIView(GenericAPIView):
         email = request.data.get('email', None)
         password = request.data.get('password', None)
         user = authenticate(username=email, password=password)
-
+        print("\n user" , user , "\n")
         if user:
             serializer = self.serializer_class(user, context={'request': request})
             print("Serialized data:", serializer.data)
             return response.Response(serializer.data, status=status.HTTP_200_OK)
         return response.Response({'message': "Invalid credentials, try again."}, status=status.HTTP_401_UNAUTHORIZED)
     
-class TeacherAPIView(ListCreateAPIView):
 
-    permission_classes = [AdminOrReanOnly | IsSuperUser]
-    
-    serializer_class = TeacherSerializer
-
-    def perform_create(self , serializer):
-        return serializer.save()
-    
-    def get_queryset(self):
-        return Teacher.objects.all()
-
-class TeacherDetailAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [AdminOrReanOnly | IsSuperUser]
-    serializer_class = TeacherSerializer
-    lookup_field = "id"
-    
-    def get_queryset(self):
-        return Teacher.objects.all()
 
 class ProfileAPIView(ListCreateAPIView):
     

@@ -7,13 +7,14 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from authentication.permission import AdminOrReanOnly , TeacherOrReadOnly
-
+from authentication.permission import AdminOrReanOnly , TeacherOrReadOnly , IsSuperUser
+from rest_framework.views import APIView
 
 
 class StudentAPIView(ListCreateAPIView):
-    # authentication_classes = []  
-    permission_classes = [AdminOrReanOnly]
+
+    permission_classes = [ IsSuperUser | AdminOrReanOnly | TeacherOrReadOnly]
+
     serializer_class = StudentSerializer
     
     def perform_create(self , serializer):
@@ -23,10 +24,10 @@ class StudentAPIView(ListCreateAPIView):
         return Student.objects.all()
     
 class StudentDetailAPIView(RetrieveUpdateDestroyAPIView):
-    serializer_class = StudentSerializer
-    # authentication_classes = []  
+    permission_classes = [ IsSuperUser | AdminOrReanOnly | TeacherOrReadOnly]
 
-    permission_classes = [AdminOrReanOnly]
+    serializer_class = StudentSerializer
+
     lookup_field = "id"
     
     def get_queryset(self):
@@ -41,9 +42,8 @@ class StudentDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Response({"message": "Student deleted successfully!"}, status=status.HTTP_200_OK)
 
 class TrailAPIView(ListCreateAPIView):
-    # authentication_classes = []  
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
     serializer_class = TrailSerializer
-    permission_classes = [AdminOrReanOnly]
 
     
     def perform_create(self , serializer):
@@ -53,6 +53,8 @@ class TrailAPIView(ListCreateAPIView):
         return Trail.objects.all()
  
 class TrailDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = TrailSerializer
     permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
@@ -61,6 +63,8 @@ class TrailDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Trail.objects.all()
 
 class ProgramAPIView(ListCreateAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = ProgramSerializer
     permission_classes = [AdminOrReanOnly]
 
@@ -72,6 +76,8 @@ class ProgramAPIView(ListCreateAPIView):
         return Program.objects.all()
  
 class ProgramDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly]
+
     serializer_class = ProgramSerializer
     permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
@@ -80,8 +86,9 @@ class ProgramDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Program.objects.all()
     
 class CourseAPIView(ListCreateAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = CourseSerializer
-    permission_classes = [AdminOrReanOnly]
 
     def perform_create(self , serializer):
         return serializer.save()
@@ -90,6 +97,8 @@ class CourseAPIView(ListCreateAPIView):
         return Course.objects.all()
  
 class CourseDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = CourseSerializer
     permission_classes = [AdminOrReanOnly]
     lookup_field = "id"
@@ -106,8 +115,8 @@ class CourseDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Response({"message": "Course deleted successfully!"}, status=status.HTTP_200_OK)
 
 class ClassroomAPIView(ListCreateAPIView):
+    permission_classes = [IsSuperUser | AdminOrReanOnly ]
     serializer_class = ClassroomSerializer
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
     def perform_create(self , serializer):
         # course = get_object_or_404(Course, id=self.request.data.get('course_id'))
@@ -117,14 +126,17 @@ class ClassroomAPIView(ListCreateAPIView):
         return Classroom.objects.all()
  
 class ClassroomDetailAPIView(RetrieveUpdateDestroyAPIView):
-    serializer_class = CourseSerializer
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
+    serializer_class = ClassroomSerializer
     lookup_field = "id"
     
     def get_queryset(self):
         return Classroom.objects.all()
     
 class EnrollmentAPIView(ListCreateAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = EnrollmentSerializer
     permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
@@ -135,6 +147,8 @@ class EnrollmentAPIView(ListCreateAPIView):
         return Enrollment.objects.all()
     
 class EnrollmentDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly ]
+
     serializer_class = EnrollmentSerializer
     permission_classes = [AdminOrReanOnly | TeacherOrReadOnly]
     lookup_field = "id"
@@ -143,10 +157,10 @@ class EnrollmentDetailAPIView(RetrieveUpdateDestroyAPIView):
         return Enrollment.objects.all()
     
 class AttendanceViewSet(viewsets.ModelViewSet):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly | TeacherOrReadOnly]
 
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
     def perform_create(self, serializer):
         # Customize any creation logic here if needed
@@ -160,7 +174,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ExamViewSet(viewsets.ModelViewSet):
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+    permission_classes = [AdminOrReanOnly | TeacherOrReadOnly]
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
 
@@ -177,10 +191,10 @@ class ExamViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ExamResultViewSet(viewsets.ModelViewSet):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly | TeacherOrReadOnly]
 
     queryset = ExamResult.objects.all()
     serializer_class = ExamResultSerializer
-    permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
 
     def perform_create(self, serializer):
         # Customize any creation logic here if needed
@@ -192,3 +206,36 @@ class ExamResultViewSet(viewsets.ModelViewSet):
         # Example: Filter by current user
         # queryset = queryset.filter(student=self.request.user)
         return queryset
+    
+class AddStudentsToClassroomView(APIView):
+    permission_classes = [ IsSuperUser | AdminOrReanOnly | TeacherOrReadOnly]
+
+    def get(self, request, classroom_id):
+        # Attempt to retrieve the classroom by ID
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"error": "Classroom not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Serialize the list of students in the classroom
+        students = classroom.students.all()  # Get all students associated with the classroom
+        print("\n whats student" , students)
+        serializer = StudentSerializer(students, many=True)  # Use your StudentSerializer here
+        print("\n whats student" , serializer.data)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, classroom_id):
+        # Fetch the classroom instance by its ID
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"error": "Classroom not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Use the serializer to process the data
+        serializer = AddStudentsToClassroomSerializer(classroom, data=request.data)
+        if serializer.is_valid():
+            serializer.save()  # This will invoke the update method in the serializer
+            return Response({"message": "Students successfully added to the classroom."}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
