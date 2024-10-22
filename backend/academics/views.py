@@ -9,6 +9,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from authentication.permission import AdminOrReanOnly , TeacherOrReadOnly , IsSuperUser
 from rest_framework.views import APIView
+from .pagination import CustomPageNumberPagination
 
 
 class StudentAPIView(ListCreateAPIView):
@@ -17,6 +18,8 @@ class StudentAPIView(ListCreateAPIView):
 
     serializer_class = StudentSerializer
     
+    pagination_class = CustomPageNumberPagination
+
     def perform_create(self , serializer):
         return serializer.save()
     
@@ -66,8 +69,7 @@ class ProgramAPIView(ListCreateAPIView):
     permission_classes = [ IsSuperUser | AdminOrReanOnly ]
 
     serializer_class = ProgramSerializer
-    permission_classes = [AdminOrReanOnly]
-
+    pagination_class = CustomPageNumberPagination
     
     def perform_create(self , serializer):
         return serializer.save()
@@ -117,7 +119,7 @@ class CourseDetailAPIView(RetrieveUpdateDestroyAPIView):
 class ClassroomAPIView(ListCreateAPIView):
     permission_classes = [IsSuperUser | AdminOrReanOnly ]
     serializer_class = ClassroomSerializer
-
+    pagination_class = CustomPageNumberPagination
     def perform_create(self , serializer):
         # course = get_object_or_404(Course, id=self.request.data.get('course_id'))
         return serializer.save()

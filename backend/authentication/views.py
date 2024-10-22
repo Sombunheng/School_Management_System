@@ -50,6 +50,14 @@ class AuthUserAPIView(ListCreateAPIView):
         return User.objects.all()
 
 class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [  IsSuperUser]
+    serializer_class = UserSerializer
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        return User.objects.all()
+
+class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsSuperUser]
     lookup_field = "id"

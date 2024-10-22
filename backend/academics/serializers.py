@@ -186,7 +186,6 @@ class ExamResultSerializer(serializers.ModelSerializer):
         # Extract only the first and last names of students
         return obj.student.first_name
 
-
 class StudentSerializer(serializers.ModelSerializer):
 
     classrooms = ClassroomSerializer(many=True, read_only=True)  # Show classroom details in student data

@@ -103,7 +103,7 @@ class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
     
-    branch = models.ForeignKey('school.Branch', on_delete=models.SET_NULL, null=True, blank=True , default=1)
+    branch = models.ForeignKey('school.Branch', on_delete=models.SET_NULL, null=True, blank=True)
     specialization = models.CharField(max_length=255 , default="General")
     hire_date = models.DateTimeField(default=timezone.now)
 
