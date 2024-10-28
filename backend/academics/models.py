@@ -34,7 +34,7 @@ class Classroom(models.Model):
     start_time = models.TimeField(default=time(9, 0))  
     end_time = models.TimeField(default=time(17, 0))  
     start_date = models.DateField(default=date.today) 
-    end_date = models.DateField(default=date(2024, 12, 31))  
+    end_date = models.DateField(default=date(2024, 12, 31))
 
     def __str__(self):
         return f'{self.name} - {self.courses.name}'
