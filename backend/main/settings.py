@@ -83,6 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "main.wsgi.application"
 
+ALLOWED_HOSTS = ['api' , 'localhost' , '127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -93,7 +94,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -133,8 +133,6 @@ REST_FRAMEWORK = {
 }
 
 CSRF_COOKIE_HTTPONLY = False
-
-
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
