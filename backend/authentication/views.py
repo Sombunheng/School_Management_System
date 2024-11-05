@@ -5,13 +5,16 @@ from django.contrib.auth import authenticate
 from authentication.models import User  , UserRole , Profile
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView,GenericAPIView
 from .pagination import CustomPageNumberPagination
-from .permission import AdminOrReanOnly , IsSuperUser , IsOwnerOrReadOnly
-from rest_framework import viewsets , generics
-from rest_framework.views import APIView
+from .permission import AdminOrReanOnly , IsSuperUser , IsOwnerOrReadOnly , OnlySuperUserCanUpdateSelf
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import UserFilter
+from rest_framework.filters import SearchFilter
+
+
 
 
 
@@ -42,6 +45,9 @@ class AuthUserAPIView(ListCreateAPIView):
     
     serializer_class = UserSerializer
     pagination_class = CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend , SearchFilter]
+    filterset_class = UserFilter
+    search_fields = ['id' ,'username']  # Fields to search
 
     def perform_create(self , serializer):
         return serializer.save()
@@ -49,17 +55,11 @@ class AuthUserAPIView(ListCreateAPIView):
     def get_queryset(self):
         return User.objects.all()
 
-class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [  IsSuperUser]
-    serializer_class = UserSerializer
-    lookup_field = "id"
-    
-    def get_queryset(self):
-        return User.objects.all()
+
 
 class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
-    permission_classes = [IsSuperUser]
+    permission_classes = [IsSuperUser | IsOwnerOrReadOnly | AdminOrReanOnly , OnlySuperUserCanUpdateSelf]
     lookup_field = "id"
     
     def get_queryset(self):
@@ -68,7 +68,6 @@ class AuthUserDetailAPIView(RetrieveUpdateDestroyAPIView):
 
 class RegisterAPIView(GenericAPIView):
     permission_classes = [AdminOrReanOnly | IsSuperUser]
-
 
     serializer_class = RegisterSerializer
     

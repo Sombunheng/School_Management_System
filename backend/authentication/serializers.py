@@ -6,7 +6,7 @@ from school.serializers import BranchSerializer
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    
+
     password = serializers.CharField(
         max_length=128 , min_length=6 , write_only=True
     )
@@ -28,6 +28,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         # Automatically assign a fixed role during creation
+        profile_data = validated_data.pop('profile', None)
+
         user = User.objects.create_user(**validated_data)
         user.save()
         return user
@@ -68,7 +70,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'is_staff', 'is_active', 'date_joined','roles','roles_name','branch','branch_name',
-             'email_verified',  'specialization', 'hire_date', 'token'
+             'email_verified',  'specialization', 'hire_date'
         ]
         read_only_fields = ['id', 'date_joined', 'token']
 

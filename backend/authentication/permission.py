@@ -15,9 +15,11 @@ class AdminOrReanOnly(permissions.IsAdminUser):
       
       # Check if the user is authenticated and has the correct role
       if request.user.is_authenticated:
+        #  test = hasattr(request.user, 'roles') and request.user.roles.id == 'admin'
+         print("\n\n whatssss??" ,hasattr(request.user, 'roles') and request.user.roles.name == 'admin' ,"\n\n")
          # Ensure `roles` attribute and its `id` exist
-         return hasattr(request.user, 'roles') and request.user.roles.id == 1
-      
+         return hasattr(request.user, 'roles') and request.user.roles.name == 'admin'
+
       return False
 
 class TeacherOrReadOnly(BasePermission):
@@ -47,13 +49,8 @@ class IsSuperUser(BasePermission):
       return False
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Custom permission to only allow owners of an object to edit or delete it.
-    """
-
+    
     def has_permission(self, request, view):
-        print("work or not")
-        # Allow any authenticated user to make a POST request (create)
         if request.method in permissions.SAFE_METHODS:
             return True
         
@@ -61,9 +58,29 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed for all authenticated users.
+        
         if request.method in permissions.SAFE_METHODS:
             return True
+        
         # Write permissions are only allowed to the owner of the profile.
-        return obj.user == request.user
+        return obj == request.user
 
+
+class OnlySuperUserCanUpdateSelf(BasePermission):
+    
+    def has_permission(self, request, view):
+        # Allow safe methods (GET, HEAD, OPTIONS) for all authenticated users
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Allow superusers to proceed to the object level check for updates
+        return request.user.is_authenticated and request.user.is_superuser
+
+    def has_object_permission(self, request, view, obj):
+        # Only allow superusers to update their own profile
+        if request.method in ['PUT', 'PATCH' , 'DELETE']:
+            # Check if the user is superuser and the object belongs to the user
+            return request.user.is_superuser and obj == request.user
+
+        # Allow read-only access otherwise
+        return request.method in permissions.SAFE_METHODS

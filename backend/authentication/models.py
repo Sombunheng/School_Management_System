@@ -106,6 +106,8 @@ class User(AbstractBaseUser, PermissionsMixin , TrackingModel):
     branch = models.ForeignKey('school.Branch', on_delete=models.SET_NULL, null=True, blank=True)
     specialization = models.CharField(max_length=255 , default="General")
     hire_date = models.DateTimeField(default=timezone.now)
+    
+    image = models.ImageField(upload_to='user_images/', blank=True, null=True)
 
     @property
     def token(self):

@@ -27,31 +27,7 @@ class Course(models.Model):
     def __str__(self):
         return f'{self.name} ({self.code})'
     
-class Classroom(models.Model):
-    name = models.CharField(max_length=255)
-    courses = models.ManyToManyField(Course , related_name='courses_classroom')
-    teacher = models.ForeignKey('authentication.User', on_delete=models.SET_NULL, null=True, related_name='classes')
-    start_time = models.TimeField(default=time(9, 0))  
-    end_time = models.TimeField(default=time(17, 0))  
-    start_date = models.DateField(default=date.today) 
-    end_date = models.DateField(default=date(2024, 12, 31))
 
-    def __str__(self):
-        return f'{self.name} - {self.courses.name}'
-
-
-class Exam(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams')
-    class_instance = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    exam_date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-
-    def __str__(self):
-        return f'{self.title} - {self.course.name} - {self.exam_date}'
-    
 
 class Student(models.Model):
     
@@ -94,6 +70,36 @@ class Student(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
  
+class Classroom(models.Model):
+    name = models.CharField(max_length=255)
+    courses = models.ManyToManyField(Course , related_name='courses_classroom')
+    # students = models.ManyToManyField(Student, related_name='students_classrooms')  # Add ManyToManyField for students
+
+    student = models.ManyToManyField(Student ,related_name='students_classroom' )
+    teacher = models.ForeignKey('authentication.User', on_delete=models.SET_NULL, null=True, related_name='classes')
+    start_time = models.TimeField(default=time(9, 0))  
+    end_time = models.TimeField(default=time(17, 0))  
+    start_date = models.DateField(default=date.today) 
+    end_date = models.DateField(default=date(2024, 12, 31))
+
+    def __str__(self):
+        return f'{self.name} - {self.courses.name}'
+
+
+class Exam(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams')
+    class_instance = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    exam_date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return f'{self.title} - {self.course.name} - {self.exam_date}'
+    
+
+
 class ExamResult(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='exam_results')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results')

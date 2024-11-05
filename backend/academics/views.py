@@ -4,12 +4,13 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
 from authentication.permission import AdminOrReanOnly , TeacherOrReadOnly , IsSuperUser
 from rest_framework.views import APIView
 from .pagination import CustomPageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import CourseFilter ,StudentFilter ,ProgramFilter
+from rest_framework.filters import SearchFilter
 
 
 class StudentAPIView(ListCreateAPIView):
@@ -19,6 +20,9 @@ class StudentAPIView(ListCreateAPIView):
     serializer_class = StudentSerializer
     
     pagination_class = CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend , SearchFilter]
+    filterset_class = StudentFilter
+    search_fields = ['id','first_name']  # Fields to search
 
     def perform_create(self , serializer):
         return serializer.save()
@@ -70,7 +74,10 @@ class ProgramAPIView(ListCreateAPIView):
 
     serializer_class = ProgramSerializer
     pagination_class = CustomPageNumberPagination
-    
+    filter_backends = [DjangoFilterBackend , SearchFilter]
+    search_fields = ['name']  # Fields to search
+
+    filterset_class = ProgramFilter
     def perform_create(self , serializer):
         return serializer.save()
     
@@ -89,8 +96,12 @@ class ProgramDetailAPIView(RetrieveUpdateDestroyAPIView):
     
 class CourseAPIView(ListCreateAPIView):
     permission_classes = [ IsSuperUser | AdminOrReanOnly ]
-
     serializer_class = CourseSerializer
+    filter_backends = [DjangoFilterBackend , SearchFilter]
+    filterset_class = CourseFilter
+    search_fields = ['id' , 'name']
+
+
 
     def perform_create(self , serializer):
         return serializer.save()
@@ -120,8 +131,12 @@ class ClassroomAPIView(ListCreateAPIView):
     permission_classes = [IsSuperUser | AdminOrReanOnly ]
     serializer_class = ClassroomSerializer
     pagination_class = CustomPageNumberPagination
+    filter_backends = [SearchFilter]
+    search_fields = ['name']  # Fields to search
+
     def perform_create(self , serializer):
         # course = get_object_or_404(Course, id=self.request.data.get('course_id'))
+
         return serializer.save()
     
     def get_queryset(self):
@@ -141,6 +156,8 @@ class EnrollmentAPIView(ListCreateAPIView):
 
     serializer_class = EnrollmentSerializer
     permission_classes = [AdminOrReanOnly , TeacherOrReadOnly]
+    filter_backends = [SearchFilter]
+    search_fields = ['id']  # Fields to search
 
     def perform_create(self , serializer):
         return serializer.save()
@@ -163,6 +180,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['student_id']  # Fields to search
+
 
     def perform_create(self, serializer):
         # Customize any creation logic here if needed

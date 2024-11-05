@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from academics.models import *
-from authentication.models import User
+from authentication.models import User , UserRole
 from school.models import School, Branch
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -35,66 +35,119 @@ class ProgramSerializer(serializers.ModelSerializer):
             instance.courses.set(courses)  # Update the courses if provided
         return instance
 
-class ClassroomSerializer(serializers.ModelSerializer):
+# class ClassroomSerializer(serializers.ModelSerializer):
+#     roles = UserRole.objects.filter(name='teacher')
+#     teacher_role = roles.filter(name='teacher').filter
     
-    courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all() ,many=True )
-    teacher = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(roles=3))
-    course_name = serializers.SerializerMethodField()
-    teacher_name = serializers.SerializerMethodField()
-    student_names = serializers.SerializerMethodField()  # Custom field to get student names
-    student_count = serializers.SerializerMethodField()   # Count of students
+#     courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all() ,many=True )
+#     teacher = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(roles=3))
+#     course_name = serializers.SerializerMethodField()
+#     teacher_name = serializers.SerializerMethodField()
+#     student_names = serializers.SerializerMethodField()  # Custom field to get student names
+#     student_count = serializers.SerializerMethodField()   # Count of students
 
-    # print('teacher :' , teacher)
+
+#     class Meta:
+#         model = Classroom
+#         fields = ['id', 'name', 'courses', 'course_name', 'teacher', 'teacher_name','start_time','end_time', 'start_date', 'end_date',
+#                               'student_names' , 'student_count'
+# ]
+    
+#     def validate(self, data):
+#         start_date = data.get('start_date')
+#         end_date = data.get('end_date')
+#         start_time = data.get('start_time')
+#         end_time = data.get('end_time')
+
+#         # Check if start_date is before end_date
+#         if start_date and start_time and start_time < end_time:
+#             raise serializers.ValidationError("Start time must be before end time.")
+    
+#         if start_date and end_date and start_date > end_date:
+#             raise serializers.ValidationError("Start date must be before end date.")
+#         return data
+
+#     def get_course_name(self, obj):
+#         return [course.name for course in obj.courses.all()]
+    
+#     def get_student_names(self, obj):
+#         # Extract only the first and last names of students
+#         return [f"{student.first_name} {student.last_name}" for student in obj.students.all()]
+
+#     def get_student_count(self, obj):
+#         return obj.students.count()  # Count all students in this classroom
+
+
+#     def get_teacher_name(self, obj):
+#         # print("\n\n what ?"  , obj.teacher , "\n\n")
+#         return obj.teacher
+
+#     def create(self , validated_data):
+#         courses = validated_data.pop('courses')
+#         classroom = Classroom.objects.create(**validated_data)
+#         classroom.courses.set(courses)
+#         return classroom
+    
+#     def update(self, instance, validated_data):
+#         courses = validated_data.pop('courses', None)  # Pop courses from validated_data
+#         instance = super().update(instance, validated_data)
+#         if courses is not None:
+#             instance.courses.set(courses)  # Update the courses if provided
+#         return instance
+    
+
+class ClassroomSerializer(serializers.ModelSerializer):
+    courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True)
+    teacher = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(), many=True)  # Add students field
+    
+    # Custom fields for displaying names
+    course_names = serializers.SerializerMethodField()
+    teacher_name = serializers.SerializerMethodField()
+    student_names = serializers.SerializerMethodField()
 
     class Meta:
         model = Classroom
-        fields = ['id', 'name', 'courses', 'course_name', 'teacher', 'teacher_name','start_time','end_time', 'start_date', 'end_date',
-                              'student_names' , 'student_count'
-]
-    
-    def validate(self, data):
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
-        start_time = data.get('start_time')
-        end_time = data.get('end_time')
+        fields = [
+            'id', 'name', 'courses', 'course_names', 'teacher', 'teacher_name',
+            'student', 'student_names', 'start_time', 'end_time', 'start_date', 'end_date'
+        ]
 
-        # Check if start_date is before end_date
-        if start_date and start_time and start_time < end_time:
-            raise serializers.ValidationError("Start time must be before end time.")
-    
-        if start_date and end_date and start_date > end_date:
-            raise serializers.ValidationError("Start date must be before end date.")
-        return data
-
-    def get_course_name(self, obj):
+    def get_course_names(self, obj):
+        """Get a list of course names for the courses related to the classroom."""
         return [course.name for course in obj.courses.all()]
-        # return [course.name for course in obj.courses.all()]
-    
-    def get_student_names(self, obj):
-        # Extract only the first and last names of students
-        return [f"{student.first_name} {student.last_name}" for student in obj.students.all()]
 
-    def get_student_count(self, obj):
-        return obj.students.count()  # Count all students in this classroom
-
-
-    
     def get_teacher_name(self, obj):
-        return obj.teacher.username
+        """Get the username of the teacher assigned to the classroom."""
+        return obj.teacher.username if obj.teacher else None
 
-    def create(self , validated_data):
-        courses = validated_data.pop('courses')
+    def get_student_names(self, obj):
+        """Get a list of student names (or usernames) for students in the classroom."""
+        return [f"{student.first_name} {student.last_name}" for student in obj.student.all()]
+
+    def create(self, validated_data):
+        """Handle creation of a Classroom instance with related courses and students."""
+        courses = validated_data.pop('courses', [])
+        students = validated_data.pop('student', [])
         classroom = Classroom.objects.create(**validated_data)
         classroom.courses.set(courses)
+        classroom.student.set(students)  # Set students ManyToMany relationship
         return classroom
-    
+
     def update(self, instance, validated_data):
-        courses = validated_data.pop('courses', None)  # Pop courses from validated_data
+        """Handle updating of a Classroom instance with related courses and students."""
+        courses = validated_data.pop('courses', None)
+        students = validated_data.pop('student', None)
         instance = super().update(instance, validated_data)
+        
         if courses is not None:
-            instance.courses.set(courses)  # Update the courses if provided
+            instance.courses.set(courses)
+        if students is not None:
+            instance.student.set(students)
+        
         return instance
-    
+
+
 class EnrollmentSerializer(serializers.ModelSerializer):
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all(),write_only=True)
     # courses = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all() , many=True, write_only=True)
