@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-pdi_7ksn==o1_m4sznxo)1rouy@u(z)9*j804)2*r544)+t886
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['api' , 'localhost' , '127.0.0.1' , 'api.adskh.com'] 
 
 AUTH_USER_MODEL="authentication.User"
 # Application definition
@@ -83,7 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "main.wsgi.application"
 
-ALLOWED_HOSTS = ['api' , 'localhost' , '127.0.0.1']
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -170,6 +169,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
