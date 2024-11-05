@@ -26,24 +26,24 @@ from django.conf.urls.static import static
 
 
 
-# schema_view = get_schema_view(
-#     openapi.Info(
-#         title="Your API Title",
-#         default_version='v1',
-#         description="API documentation with Swagger and JWT Authentication",
-#         terms_of_service="https://www.yourapp.com/terms/",
-#         contact=openapi.Contact(email="contact@yourapp.com"),
-#         license=openapi.License(name="BSD License"),
-#     ),
-#     public=True,
-#     permission_classes=(permissions.AllowAny,),
-#     authentication_classes=[],
-# )
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Your API Title",
+        default_version='v1',
+        description="API documentation with Swagger and JWT Authentication",
+        terms_of_service="https://www.yourapp.com/terms/",
+        contact=openapi.Contact(email="contact@yourapp.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    authentication_classes=[],
+)
 
 
 
 urlpatterns = [
-    # path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api-auth/', include('rest_framework.urls')),
     path('api-token-auth/', views.obtain_auth_token),   # Token authentication endpoint
     path("admin/", admin.site.urls),
