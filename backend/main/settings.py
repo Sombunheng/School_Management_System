@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-pdi_7ksn==o1_m4sznxo)1rouy@u(z)9*j804)2*r544)+t886
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['api' , 'localhost' , '127.0.0.1' , 'api.adskh.com'] 
+ALLOWED_HOSTS = ['api' , 'localhost' , '127.0.0.1' , 'api.adskh.com' , '159.223.82.236'] 
 
 AUTH_USER_MODEL="authentication.User"
 # Application definition
